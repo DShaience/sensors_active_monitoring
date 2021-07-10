@@ -5,6 +5,9 @@ import glob
 import os
 from matplotlib import pyplot as plt
 import seaborn as sns
+
+from visualization_utils import correlation_matrix
+
 sns.set(color_codes=True)
 
 
@@ -62,12 +65,28 @@ def get_sensors_files_from_path(path: str):
 
 def read_and_concat_sensors_data_from_files(files: List[str]):
     sensors_list_dfs = []
-    for file in files:
+    for file in files[0:2]:
         sensors = read_parse_sensors_data_to_dataframe(file)
         sensors_with_recalculated_dtypes = re_assign_data_types(sensors, datetime_cols=['Date'], numeric_cols=[col for col in sensors.columns if col != 'Date'])
         sensors_list_dfs.append(sensors_with_recalculated_dtypes)
     sensors_all = pd.concat(sensors_list_dfs)
+    sensors_all.sort_values(by=['Date'], ascending=True, inplace=True)
     return sensors_all
+
+
+def calc_time_delta_seconds(series_a: pd.Series, series_b: pd.Series) -> pd.Series:
+    return (series_b-series_a).dt.total_seconds()
+
+
+def add_nan_values_on_time_gap(df: pd.DataFrame, date_column: str, cols_to_set: List[str], gap_threshold_seconds: float = 3600.0):
+    df['time_gap'] = calc_time_delta_seconds(df[date_column], df[date_column].shift(-1))
+    df.loc[df['time_gap'] >= gap_threshold_seconds, cols_to_set] = np.nan
+    # df.loc[df['time_gap'].shift(1) >= gap_threshold_seconds, cols_to_set] = np.nan
+    # df.loc[df['time_gap'].shift(-1) >= gap_threshold_seconds, cols_to_set] = np.nan
+    return df
+
+
+
 
 
 if __name__ == '__main__':
@@ -75,9 +94,19 @@ if __name__ == '__main__':
     files = get_sensors_files_from_path(path)
     sensors_all = read_and_concat_sensors_data_from_files(files)
 
-    # correlation_matrix(sensors_all, fontsz=8)
-    sns.lineplot(data=sensors_all, x="Date", y='GPU Temperature [°C]')
-    # fixme: there's a problem with date parsing. the date is completely wrong
+    cols_to_set = [col for col in sensors_all if col != 'Date']
+    sensors_nan_gaps = add_nan_values_on_time_gap(sensors_all, 'Date', cols_to_set)
+    # correlation_matrix(sensors_nan_gaps, fontsz=8)
+    # sns.lineplot(data=sensors_nan_gaps, x="Date", y='GPU Temperature [°C]')
+
+    fig = plt.figure()
+    ax = fig.add_subplot(1, 1, 1)
+    ax.plot(sensors_nan_gaps['Date'], sensors_nan_gaps['GPU Temperature [°C]'])
+    # ax.set_aspect(0.1)
     plt.show()
+    # ax.plot(linspace(-1, 1), sin(2 * pi * linspace(-1, 1)))
+
+    # plt.plot(sensors_nan_gaps['Date'], sensors_nan_gaps['GPU Temperature [°C]'])
+    # plt.show()
 
 

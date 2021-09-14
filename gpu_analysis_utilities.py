@@ -84,15 +84,24 @@ def add_nan_values_on_time_gap(df: pd.DataFrame, date_column: str, cols_to_set: 
 
 
 if __name__ == '__main__':
-    path = r'C:\Users\Shay\Desktop\overclocking\Alien_Isolation_sensors'
+    path = r'C:\Users\Shay\Desktop\Desktop items\overclocking\Sensors_data'
     files = get_sensors_files_from_path(path)
     sensors_all = read_and_concat_sensors_data_from_files(files)
 
     cols_to_set = [col for col in sensors_all if col != 'Date']
     sensors_nan_gaps = add_nan_values_on_time_gap(sensors_all, 'Date', cols_to_set)
     # correlation_matrix(sensors_nan_gaps, fontsz=8)
+    # [col for col in cols_to_set if 'gpu' in col.lower()]
 
-    target_col = 'GPU Temperature [°C]'
+    # target_col = 'GPU Temperature [°C]'
+    # target_col = 'Power Consumption (%) [% TDP]'
+    # target_col = 'CPU Temperature [°C]'
+    # target_col = 'GPU Load [%]'
+    # target_col = 'Board Power Draw [W]'
+    target_col = 'Hot Spot [°C]'
+    # target_col = 'Fan Speed (RPM) [RPM]'
+    # target_col = 'Fan Speed (%) [%]'
+    # target_col = 'GPU Chip Power Draw [W]'
     sensors_nan_gaps[target_col].plot()
     # pd.DataFrame.plot(sensors_nan_gaps['Date'], sensors_nan_gaps[target_col])
     plt.show()

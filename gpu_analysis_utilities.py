@@ -95,15 +95,21 @@ if __name__ == '__main__':
 
     # target_col = 'GPU Temperature [°C]'
     # target_col = 'Power Consumption (%) [% TDP]'
-    # target_col = 'CPU Temperature [°C]'
+    target_col = 'CPU Temperature [°C]'
     # target_col = 'GPU Load [%]'
     # target_col = 'Board Power Draw [W]'
-    target_col = 'Hot Spot [°C]'
+    # target_col = 'Hot Spot [°C]'
     # target_col = 'Fan Speed (RPM) [RPM]'
     # target_col = 'Fan Speed (%) [%]'
     # target_col = 'GPU Chip Power Draw [W]'
+    target_col_values_no_nan = sensors_nan_gaps.loc[~sensors_nan_gaps[target_col].isna(), target_col].values
+    print(f"{target_col} max: {np.max(target_col_values_no_nan)}")
+    print(f"{target_col} min: {np.min(target_col_values_no_nan)}")
+    print(f"{target_col} mean: {np.mean(target_col_values_no_nan)}")
+    print(f"{target_col} median: {np.median(target_col_values_no_nan)}")
+    print(f"{target_col} quantile 0.1: {np.quantile(target_col_values_no_nan, 0.1)}")
+    print(f"{target_col} quantile 0.95: {np.quantile(target_col_values_no_nan, 0.95)}")
     sensors_nan_gaps[target_col].plot()
-    # pd.DataFrame.plot(sensors_nan_gaps['Date'], sensors_nan_gaps[target_col])
     plt.show()
 
 

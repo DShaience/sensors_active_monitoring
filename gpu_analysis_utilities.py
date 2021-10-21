@@ -5,6 +5,7 @@ import glob
 import os
 from matplotlib import pyplot as plt
 import seaborn as sns
+from collections import OrderedDict
 from visualization_utils import correlation_matrix
 sns.set(color_codes=True)
 
@@ -83,37 +84,93 @@ def add_nan_values_on_time_gap(df: pd.DataFrame, date_column: str, cols_to_set: 
     return df
 
 
+def calc_statistics(sensor_data: np.ndarray, sensor_name: str) -> dict:
+    features = OrderedDict({"Sensor": sensor_name})
+    # sensor_data = sensor.dropna()
+    features['max'] = np.max(sensor_data)
+    features['min'] = np.min(sensor_data)
+    features['mean'] = np.mean(sensor_data)
+    features['median'] = np.median(sensor_data)
+    features['quantile_0.1'] = np.quantile(sensor_data, 0.1)
+    features['quantile_0.95'] = np.quantile(sensor_data, 0.95)
+    features['min'] = np.min(sensor_data)
+    return features
+
+
 if __name__ == '__main__':
     path = r'C:\Users\Shay\Desktop\Desktop items\overclocking\Sensors_data'
     files = get_sensors_files_from_path(path)
+    # files = [file for file in files if "RTX 3070 Ti Asus 04 CPU-OC_01.txt" not in file]
+    # files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Horizon Zero Dawn.txt" in file]
+    # files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Control.txt" in file]
+    files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Shadow of the Tomb Raider.txt" in file]
     sensors_all = read_and_concat_sensors_data_from_files(files)
 
     cols_to_set = [col for col in sensors_all if col != 'Date']
     sensors_nan_gaps = add_nan_values_on_time_gap(sensors_all, 'Date', cols_to_set)
-    # correlation_matrix(sensors_nan_gaps, fontsz=8)
-    # [col for col in cols_to_set if 'gpu' in col.lower()]
+
+    target_columns = ['CPU Temperature [°C]', 'GPU Temperature [°C]', 'Memory Temperature [°C]', 'Hot Spot [°C]',
+                      'GPU Chip Power Draw [W]', 'System Memory Used [MB]', 'Fan 1 Speed (%) [%]', 'Fan 2 Speed (%) [%]']
+
+    n_rows = 4
+    n_cols = max(1, int(round(len(target_columns) / n_rows + 0.5, 0)))
+    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols)
+
+    features_list = []
+    for i in range(len(target_columns)):
+        target_col = target_columns[i]
+        ax = axes.flatten()[i]
+        data = sensors_nan_gaps.loc[~sensors_nan_gaps[target_col].isna(), target_col].values
+        ax.plot(range(len(data)), data)
+        ax.title.set_text(target_col)
+        features_list.append(calc_statistics(data, target_col.replace(' ', '_')))
+    if n_cols * n_rows > len(target_columns):
+        for ax in axes.flatten()[len(target_columns):]:
+            ax.remove()
+
+    sensors_features = pd.DataFrame(features_list)
+    print(sensors_features.to_string())
+
+    fig.tight_layout(h_pad=-1)
+    plt.show()
+    print(n_rows)
 
     # target_col = 'GPU Temperature [°C]'
     # target_col = 'Power Consumption (%) [% TDP]'
-    target_col = 'CPU Temperature [°C]'
+    # target_col = 'CPU Temperature [°C]'
+    # target_col = 'Memory Temperature [°C]'
+    # target_col = 'System Memory Used [MB]'
     # target_col = 'GPU Load [%]'
     # target_col = 'Board Power Draw [W]'
     # target_col = 'Hot Spot [°C]'
-    # target_col = 'Fan Speed (RPM) [RPM]'
-    # target_col = 'Fan Speed (%) [%]'
+    # target_col = 'Fan 1 Speed (RPM) [RPM]'
+    # target_col = 'Fan 2 Speed (RPM) [RPM]'
+    # target_col = 'Fan 1 Speed (%) [%]'
+    # target_col = 'Fan 2 Speed (%) [%]'
     # target_col = 'GPU Chip Power Draw [W]'
-    target_col_values_no_nan = sensors_nan_gaps.loc[~sensors_nan_gaps[target_col].isna(), target_col].values
-    print(f"{target_col} max: {np.max(target_col_values_no_nan)}")
-    print(f"{target_col} min: {np.min(target_col_values_no_nan)}")
-    print(f"{target_col} mean: {np.mean(target_col_values_no_nan)}")
-    print(f"{target_col} median: {np.median(target_col_values_no_nan)}")
-    print(f"{target_col} quantile 0.1: {np.quantile(target_col_values_no_nan, 0.1)}")
-    print(f"{target_col} quantile 0.95: {np.quantile(target_col_values_no_nan, 0.95)}")
-    sensors_nan_gaps[target_col].plot()
-    plt.show()
 
 
+# old-cpu
+# E:\development\.virtual_env\sensors_active_monitoring\Scripts\python.exe E:/development/sensors_active_monitoring/gpu_analysis_utilities.py
+# Memory Temperature [°C] max: 74.0
+# Memory Temperature [°C] min: 34.0
+# Memory Temperature [°C] mean: 55.21469448033967
+# Memory Temperature [°C] median: 56.0
+# Memory Temperature [°C] quantile 0.1: 42.0
+# Memory Temperature [°C] quantile 0.95: 68.0
+#
+# Process finished with exit code 0
 
+# i7-7700k
+# E:\development\.virtual_env\sensors_active_monitoring\Scripts\python.exe E:/development/sensors_active_monitoring/gpu_analysis_utilities.py
+# Memory Temperature [°C] max: 66.0
+# Memory Temperature [°C] min: 36.0
+# Memory Temperature [°C] mean: 48.37158943265483
+# Memory Temperature [°C] median: 50.0
+# Memory Temperature [°C] quantile 0.1: 38.0
+# Memory Temperature [°C] quantile 0.95: 62.0
+#
+# Process finished with exit code 0
 
 
 

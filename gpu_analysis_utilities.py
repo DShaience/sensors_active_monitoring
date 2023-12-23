@@ -6,50 +6,35 @@ import os
 from matplotlib import pyplot as plt
 import seaborn as sns
 from collections import OrderedDict
-from visualization_utils import correlation_matrix
 sns.set(color_codes=True)
 
 
-def parse_line_to_array(line: str, delimiter: str = ',') -> List[str]:
-    line_arr = line.split(delimiter)
-    return [col.strip() for col in line_arr if col.strip() != '']
+PERF_CAP_REASON = {
+    # Taken from:
+    #   https://www.techpowerup.com/forums/threads/gpu-z-perfcap-log-number-meanings.202433/
+    1: "NV_GPU_PERF_POLICY_ID_SW_POWER",        # Power. Indicating perf is limited by total power limit.
+    2: "NV_GPU_PERF_POLICY_ID_SW_THERMAL",      # Thermal. Indicating perf is limited by temperature limit.
+    4: "NV_GPU_PERF_POLICY_ID_SW_RELIABILITY",  # Reliability. Indicating perf is limited by reliability voltage.
+    8: "NV_GPU_PERF_POLICY_ID_SW_OPERATING",    # Operating. Indicating perf is limited by max operating voltage.
+    16: "NV_GPU_PERF_POLICY_ID_SW_UTILIZATION"  # Utilization. Indicating perf is limited by GPU utilization.
+}
 
 
-def parse_line_array_to_dict(keys, array):
-    assert len(keys) == len(array)
-    zip_iterator = zip(keys, array)
-    return dict(zip_iterator)
+def extract_reasons(code):
+    reasons = []
+    for key, value in PERF_CAP_REASON.items():
+        if code & key:
+            reasons.append(value)
+    return reasons
 
 
-def get_file_header(file_path: str) -> str:
-    with open(file_path) as f:
-        first_line = f.readline().strip()
-    f.close()
-    return first_line
-
-
-def read_parse_sensors_data_to_dataframe(file_path):
-    # global sensors
-    header = get_file_header(file_path)
-    parsed_header = parse_line_to_array(header)
-    list_of_dict_values = []
-    with open(file_path) as f:
-        for index, line in enumerate(f):
-            if (parsed_header[0] in line.strip()) or (parsed_header[1] in line.strip()):
-                continue
-            line_as_arr = parse_line_to_array(line)
-            list_of_dict_values.append(parse_line_array_to_dict(parsed_header, line_as_arr))
-    f.close()
-    sensors = pd.DataFrame(list_of_dict_values)
-    return sensors
-
-
-def re_assign_data_types(df: pd.DataFrame, datetime_cols: list, numeric_cols: list):
+def convert_columns_data_types(df: pd.DataFrame, datetime_cols: list, numeric_cols: list):
     for col in df.columns:
+        print(col)
         if col in datetime_cols:
             df[col] = pd.to_datetime(df[col])
         elif col in numeric_cols:
-            df[col] = df[col].replace('-', np.nan)
+            df[col] = df[col].str.strip().replace('-', np.nan)
             df[col] = pd.to_numeric(df[col])
         else:
             pass
@@ -62,16 +47,25 @@ def get_sensors_files_from_path(path: str):
     return files
 
 
-def read_and_concat_sensors_data_from_files(files: List[str]):
-    sensors_list_dfs = []
-    for file in files:
-        sensors = read_parse_sensors_data_to_dataframe(file)
-        sensors_with_recalculated_dtypes = re_assign_data_types(sensors, datetime_cols=['Date'], numeric_cols=[col for col in sensors.columns if col != 'Date'])
-        sensors_list_dfs.append(sensors_with_recalculated_dtypes)
-    sensors_all = pd.concat(sensors_list_dfs)
-    sensors_all.sort_values(by=['Date'], ascending=True, inplace=True)
-    sensors_all.reset_index(drop=True, inplace=True)
-    return sensors_all
+def read_sensors_data_from_file(file: str):
+    sensors = pd.read_csv(file, encoding='unicode_escape')
+
+    # removing repeating header by comparing the first column name to all rows' values.
+    # If this matches, it means that the row is probably a repeat of the header
+    first_column = sensors.columns[0]
+    sensors = sensors[sensors[first_column] != first_column]
+
+    # remove empty columns
+    sensors.dropna(axis=1, how='all', inplace=True)
+
+    # rename columns to eliminate leading and trailing spaces
+    columns = {col: col.strip() for col in sensors.columns}
+    sensors.rename(columns=columns, inplace=True)
+    sensors_with_recalculated_dtypes = convert_columns_data_types(sensors, datetime_cols=['Date'], numeric_cols=[col for col in sensors.columns if col != 'Date'])
+
+    sensors_with_recalculated_dtypes.sort_values(by=['Date'], ascending=True, inplace=True)
+    sensors_with_recalculated_dtypes.reset_index(drop=True, inplace=True)
+    return sensors_with_recalculated_dtypes
 
 
 def calc_time_delta_seconds(series_a: pd.Series, series_b: pd.Series) -> pd.Series:
@@ -86,7 +80,6 @@ def add_nan_values_on_time_gap(df: pd.DataFrame, date_column: str, cols_to_set: 
 
 def calc_statistics(sensor_data: np.ndarray, sensor_name: str) -> dict:
     features = OrderedDict({"Sensor": sensor_name})
-    # sensor_data = sensor.dropna()
     features['max'] = np.max(sensor_data)
     features['min'] = np.min(sensor_data)
     features['mean'] = np.mean(sensor_data)
@@ -97,6 +90,37 @@ def calc_statistics(sensor_data: np.ndarray, sensor_name: str) -> dict:
     return features
 
 
+def plot_reasons_bar_chart(reasons_df: pd.DataFrame):
+    # Create a bar chart
+    reasons_df.plot(kind='barh', color='skyblue', figsize=(14, 6))
+    plt.title('Occurrences of Reasons')
+    plt.xlabel('Count')
+    plt.ylabel('Reasons')
+    plt.grid(axis='x')
+    plt.tight_layout()
+    plt.show()
+
+
+def plot_reasons_correlation_matrix(df: pd.DataFrame):
+    global i
+    # Create a matrix of zeros with reasons as columns and index
+    reasons_matrix = pd.DataFrame(0, index=reasons_df.index, columns=reasons_df.index)
+    # Update the matrix with counts of reasons appearing together
+    for reasons in df['Reasons']:
+        for i in range(len(reasons)):
+            for j in range(i + 1, len(reasons)):
+                reasons_matrix.loc[reasons[i], reasons[j]] += 1
+                reasons_matrix.loc[reasons[j], reasons[i]] += 1
+    # Generate a heatmap for the correlation matrix
+    plt.figure(figsize=(10, 10))
+    sns.heatmap(reasons_matrix, annot=True, cmap='coolwarm', fmt='d')
+    plt.title('Correlation between Reasons')
+    plt.xlabel('Reasons')
+    plt.ylabel('Reasons')
+    plt.tight_layout()
+    plt.show()
+
+
 if __name__ == '__main__':
     path = r'C:\Users\Shay\Desktop\Desktop items\overclocking\Sensors_data'
     files = get_sensors_files_from_path(path)
@@ -105,12 +129,14 @@ if __name__ == '__main__':
     # files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Control.txt" in file]
     files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Shadow of the Tomb Raider.txt" in file]
     sensors_all = read_and_concat_sensors_data_from_files(files)
+    file = [file for file in files if "Morales" in file][0]
+    sensors_all = read_sensors_data_from_file(file)
 
     cols_to_set = [col for col in sensors_all if col != 'Date']
     sensors_nan_gaps = add_nan_values_on_time_gap(sensors_all, 'Date', cols_to_set)
 
     target_columns = ['CPU Temperature [°C]', 'GPU Temperature [°C]', 'Memory Temperature [°C]', 'Hot Spot [°C]',
-                      'GPU Chip Power Draw [W]', 'System Memory Used [MB]', 'Fan 1 Speed (%) [%]', 'Fan 2 Speed (%) [%]']
+                      'GPU Chip Power Draw [W]',  'GPU Load [%]', 'Fan 1 Speed (%) [%]', 'System Memory Used [MB]']
 
     n_rows = 4
     n_cols = max(1, int(round(len(target_columns) / n_rows + 0.5, 0)))
@@ -135,6 +161,27 @@ if __name__ == '__main__':
     plt.show()
     print(n_rows)
 
+    # sensors_all['PerfCap Reason []'].hist()
+    sensors_all['PerfCap Reason []'] = sensors_all['PerfCap Reason []'].astype(int)
+    sensors_all['Reasons'] = sensors_all['PerfCap Reason []'].apply(extract_reasons)
+
+    # Flatten the list of reasons
+    reasons_list = [reason for sublist in sensors_all['Reasons'] for reason in sublist]
+
+    from collections import Counter
+    # Count occurrences of each reason
+    reasons_count = Counter(reasons_list)
+
+    # Convert the Counter to a DataFrame for plotting
+    reasons_df = pd.DataFrame.from_dict(reasons_count, orient='index', columns=['Count'])
+    reasons_df.sort_values(by='Count', ascending=True, inplace=True)
+
+    plot_reasons_bar_chart(reasons_df)
+
+    PLOT_CORRELATION = False
+    if PLOT_CORRELATION:
+        plot_reasons_correlation_matrix(sensors_all)
+
     # target_col = 'GPU Temperature [°C]'
     # target_col = 'Power Consumption (%) [% TDP]'
     # target_col = 'CPU Temperature [°C]'
@@ -148,45 +195,4 @@ if __name__ == '__main__':
     # target_col = 'Fan 1 Speed (%) [%]'
     # target_col = 'Fan 2 Speed (%) [%]'
     # target_col = 'GPU Chip Power Draw [W]'
-
-
-# old-cpu
-# E:\development\.virtual_env\sensors_active_monitoring\Scripts\python.exe E:/development/sensors_active_monitoring/gpu_analysis_utilities.py
-# Memory Temperature [°C] max: 74.0
-# Memory Temperature [°C] min: 34.0
-# Memory Temperature [°C] mean: 55.21469448033967
-# Memory Temperature [°C] median: 56.0
-# Memory Temperature [°C] quantile 0.1: 42.0
-# Memory Temperature [°C] quantile 0.95: 68.0
-#
-# Process finished with exit code 0
-
-# i7-7700k
-# E:\development\.virtual_env\sensors_active_monitoring\Scripts\python.exe E:/development/sensors_active_monitoring/gpu_analysis_utilities.py
-# Memory Temperature [°C] max: 66.0
-# Memory Temperature [°C] min: 36.0
-# Memory Temperature [°C] mean: 48.37158943265483
-# Memory Temperature [°C] median: 50.0
-# Memory Temperature [°C] quantile 0.1: 38.0
-# Memory Temperature [°C] quantile 0.95: 62.0
-#
-# Process finished with exit code 0
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

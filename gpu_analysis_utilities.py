@@ -23,6 +23,7 @@ PERF_CAP_REASON = {
 def extract_reasons(code):
     reasons = []
     for key, value in PERF_CAP_REASON.items():
+        key = int(key)
         if code & key:
             reasons.append(value)
     return reasons
@@ -34,7 +35,10 @@ def convert_columns_data_types(df: pd.DataFrame, datetime_cols: list, numeric_co
         if col in datetime_cols:
             df[col] = pd.to_datetime(df[col])
         elif col in numeric_cols:
-            df[col] = df[col].str.strip().replace('-', np.nan)
+            try:
+                df[col] = df[col].str.strip().replace('-', np.nan)
+            except:
+                pass
             df[col] = pd.to_numeric(df[col])
         else:
             pass
@@ -161,8 +165,7 @@ if __name__ == '__main__':
     plt.show()
     print(n_rows)
 
-    # sensors_all['PerfCap Reason []'].hist()
-    sensors_all['PerfCap Reason []'] = sensors_all['PerfCap Reason []'].astype(int)
+    sensors_all['PerfCap Reason []'] = sensors_all['PerfCap Reason []'].fillna(value=0).astype(int)
     sensors_all['Reasons'] = sensors_all['PerfCap Reason []'].apply(extract_reasons)
 
     # Flatten the list of reasons

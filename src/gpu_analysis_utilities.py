@@ -126,14 +126,17 @@ def plot_reasons_correlation_matrix(df: pd.DataFrame):
 
 
 if __name__ == '__main__':
-    path = r'C:\Users\Shay\Desktop\Desktop items\overclocking\Sensors_data'
+    # path = r'C:\Users\Shay\Desktop\Desktop items\overclocking\Sensors_data'
+    # path = r'E:\Backups\Desktop\Desktop items\overclocking\Sensors_data'
+    path = r'C:\Users\shayt\OneDrive\Desktop\Sensors'
     files = get_sensors_files_from_path(path)
     # files = [file for file in files if "RTX 3070 Ti Asus 04 CPU-OC_01.txt" not in file]
-    # files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Horizon Zero Dawn.txt" in file]
-    # files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Control.txt" in file]
-    files = [file for file in files if "RTX 3070 Ti Asus 05 intel core i7-7700k CPU Game - Shadow of the Tomb Raider.txt" in file]
-    sensors_all = read_and_concat_sensors_data_from_files(files)
+    # files = [file for file in files if "Baseline3.txt" in file]
+    # files = [file for file in files if "Psychonauts2" in file]
+    # files = [file for file in files if "Requiem" in file]
+    # files = [file for file in files if "Origins" in file]
     file = [file for file in files if "Morales" in file][0]
+    # file = [file for file in files if "Unigine Heaven Benchmark" in file][0]
     sensors_all = read_sensors_data_from_file(file)
 
     cols_to_set = [col for col in sensors_all if col != 'Date']

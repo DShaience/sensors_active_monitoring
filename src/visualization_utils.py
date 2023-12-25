@@ -8,7 +8,7 @@ from matplotlib import pyplot as plt
 
 def plot_matrix(mat: Union[pd.DataFrame, np.ndarray], font_size: int, cbar_ticks: List[float] = None):
     """
-    :param mat: matrix to plot. If using dataframe, the columns are automatically used as labels. Othereise, matrix is anonymous
+    :param mat: matrix to plot. If using dataframe, the columns are automatically used as labels. Otherwise, matrix is anonymous
     :param font_size: font size
     :param cbar_ticks: the spacing between cbar ticks. If None, this is set automatically.
     :return:

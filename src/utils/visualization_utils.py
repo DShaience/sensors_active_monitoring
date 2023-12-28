@@ -9,28 +9,16 @@ from utils.analytical_utils import calc_statistics
 
 
 def plot_reasons_bar_chart(reasons_df: pd.DataFrame):
-    # Create figure and axes objects
     fig, ax = plt.subplots(figsize=(12, 6))
 
-    # Extracting data from DataFrame
     reasons = reasons_df.index
     counts = reasons_df['Count']
-
-    # Plot the bar chart using Matplotlib
     ax.barh(reasons, counts, color='skyblue')
-
-    # Set title and labels
     ax.set_title('Occurrences of Reasons')
     ax.set_xlabel('Count')
     ax.set_ylabel('Reasons')
-
-    # Invert y-axis to display reasons from top to bottom
     ax.invert_yaxis()
-
-    # Set grid
     ax.grid(axis='x')
-
-    # Adjust layout and display the plot
     plt.tight_layout()
     plot_image = fig_to_img(fig)
 

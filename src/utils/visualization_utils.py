@@ -64,12 +64,12 @@ def create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps):
     return features_list, plot_image
 
 
-def plot_reasons_correlation_matrix(df: pd.DataFrame, reasons: list[str]):
+def calc_and_plot_reasons_correlation(reasons: pd.Series, reasons_types: list[str]):
     # Create a matrix of zeros with reasons as columns and index
-    reasons_matrix = pd.DataFrame(0, index=reasons, columns=reasons)
+    reasons_matrix = pd.DataFrame(0, index=reasons_types, columns=reasons_types)
 
     # Update the matrix with counts of reasons appearing together
-    for reasons_list in df['Reasons']:
+    for reasons_list in reasons:
         for i in range(len(reasons_list)):
             for j in range(i + 1, len(reasons_list)):
                 reasons_matrix.loc[reasons_list[i], reasons_list[j]] += 1

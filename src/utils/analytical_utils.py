@@ -1,5 +1,4 @@
-from collections import OrderedDict
-from typing import List
+from collections import Counter, OrderedDict
 
 import numpy as np
 import pandas as pd
@@ -66,7 +65,7 @@ def calc_time_delta_seconds(series_a: pd.Series, series_b: pd.Series) -> pd.Seri
     return (series_b-series_a).dt.total_seconds()
 
 
-def add_nan_values_on_time_gap(df: pd.DataFrame, date_column: str, cols_to_set: List[str], gap_threshold_seconds: float = 3600.0):
+def add_nan_values_on_time_gap(df: pd.DataFrame, date_column: str, cols_to_set: list[str], gap_threshold_seconds: float = 3600.0):
     df['time_gap_sec'] = calc_time_delta_seconds(df[date_column], df[date_column].shift(-1))
     df.loc[df['time_gap_sec'] >= gap_threshold_seconds, cols_to_set] = np.nan
     return df
@@ -82,3 +81,17 @@ def calc_statistics(sensor_data: np.ndarray, sensor_name: str) -> dict:
     features['quantile_0.95'] = np.quantile(sensor_data, 0.95)
     features['min'] = np.min(sensor_data)
     return features
+
+
+def calc_prefetch_cap_reasons(sensors_all: pd.DataFrame):
+    sensors_all['PerfCap Reason []'] = sensors_all['PerfCap Reason []'].fillna(value=0).astype(int)
+    sensors_all['Reasons'] = sensors_all['PerfCap Reason []'].apply(extract_reasons)
+    # Flatten the list of reasons
+    reasons_list = [reason for sublist in sensors_all['Reasons'] for reason in sublist]
+    # Count occurrences of each reason
+    reasons_count = Counter(reasons_list)
+
+    # Convert the Counter to a DataFrame for plotting
+    reasons_df = pd.DataFrame.from_dict(reasons_count, orient='index', columns=['Count'])
+    reasons_df.sort_values(by='Count', ascending=False, inplace=True)
+    return reasons_df

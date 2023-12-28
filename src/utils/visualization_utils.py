@@ -1,79 +1,93 @@
-from typing import Union, List
+import base64
+import io
 
-import numpy as np
 import pandas as pd
 import seaborn as sns
 from matplotlib import pyplot as plt
 
-
-def plot_matrix(mat: Union[pd.DataFrame, np.ndarray], font_size: int, cbar_ticks: List[float] = None):
-    """
-    :param mat: matrix to plot. If using dataframe, the columns are automatically used as labels. Otherwise, matrix is anonymous
-    :param font_size: font size
-    :param cbar_ticks: the spacing between cbar ticks. If None, this is set automatically.
-    :return:
-    """
-    cmap = sns.diverging_palette(220, 10, as_cmap=True)
-    plt.figure(figsize=[8, 8])
-    if cbar_ticks is not None:
-        ax = sns.heatmap(mat, cmap=cmap, vmin=min(cbar_ticks), vmax=max(cbar_ticks), square=True, linewidths=.5, cbar_kws={"shrink": .5})
-        cbar = ax.collections[0].colorbar
-        cbar.set_ticks(cbar_ticks)
-        cbar.set_ticklabels(cbar_ticks)
-    else:
-        ax = sns.heatmap(mat, cmap=cmap, vmin=np.min(np.array(mat).ravel()), vmax=np.max(np.array(mat).ravel()), square=True, linewidths=.5, cbar_kws={"shrink": .5})
-        cbar = ax.collections[0].colorbar
-
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=90, fontsize=font_size)
-    ax.set_yticklabels(ax.get_yticklabels(), rotation=0, fontsize=font_size)
-    plt.show()
-
-
-def correlation_matrix(df: pd.DataFrame, font_size: int = 16, correlation_thr: float = None):
-    """
-    :param df: input dataframe. Correlation matrix calculated for all columns
-    :param font_size: font size
-    :param correlation_thr:
-    :return:
-    """
-    # Correlation between numeric variables
-    cols_numeric = list(df)
-    data_numeric = df[cols_numeric].copy(deep=True)
-    corr_mat = data_numeric.corr(method='pearson')
-    if correlation_thr is not None:
-        assert corr_mat > 0.0, "corrThr must be a float between [0, 1]"
-        corr_mat[corr_mat >= correlation_thr] = 1.0
-        corr_mat[corr_mat <= -correlation_thr] = -1.0
-
-    cbar_ticks = [round(num, 1) for num in np.linspace(-1, 1, 11, dtype=np.float)]  # rounding corrects for floating point imprecision
-    plot_matrix(corr_mat, font_size=font_size, cbar_ticks=cbar_ticks)
+from utils.analytical_utils import calc_statistics
 
 
 def plot_reasons_bar_chart(reasons_df: pd.DataFrame):
-    # Create a bar chart
-    reasons_df.plot(kind='barh', color='skyblue', figsize=(14, 6))
-    plt.title('Occurrences of Reasons')
-    plt.xlabel('Count')
-    plt.ylabel('Reasons')
-    plt.grid(axis='x')
+    # Create figure and axes objects
+    fig, ax = plt.subplots(figsize=(12, 6))
+
+    # Extracting data from DataFrame
+    reasons = reasons_df.index
+    counts = reasons_df['Count']
+
+    # Plot the bar chart using Matplotlib
+    ax.barh(reasons, counts, color='skyblue')
+
+    # Set title and labels
+    ax.set_title('Occurrences of Reasons')
+    ax.set_xlabel('Count')
+    ax.set_ylabel('Reasons')
+
+    # Invert y-axis to display reasons from top to bottom
+    ax.invert_yaxis()
+
+    # Set grid
+    ax.grid(axis='x')
+
+    # Adjust layout and display the plot
     plt.tight_layout()
-    plt.show()
+    plot_image = fig_to_img(fig)
+
+    return plot_image
+
+
+def fig_to_img(fig):
+    buf = io.BytesIO()
+    fig.savefig(buf, format='png')
+    buf.seek(0)
+    return base64.b64encode(buf.read()).decode('utf-8')
+
+
+def create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps):
+    n_rows = 4
+    n_cols = max(1, int(round(len(selected_columns) / n_rows + 0.5, 0)))
+    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(12, 8))
+    features_list = []
+    for i in range(len(selected_columns)):
+        target_col = selected_columns[i]
+        ax = axes.flatten()[i]
+        data = sensors_nan_gaps.loc[~sensors_nan_gaps[target_col].isna(), target_col].values
+        ax.plot(range(len(data)), data)
+        ax.set_title(target_col)
+        features_list.append(calc_statistics(data, target_col.replace(' ', '_')))
+    if n_cols * n_rows > len(selected_columns):
+        for ax in axes.flatten()[len(selected_columns):]:
+            ax.remove()
+    plt.tight_layout()
+    plot_image = fig_to_img(fig)
+    return features_list, plot_image
 
 
 def plot_reasons_correlation_matrix(df: pd.DataFrame, reasons: list[str]):
     # Create a matrix of zeros with reasons as columns and index
     reasons_matrix = pd.DataFrame(0, index=reasons, columns=reasons)
+
     # Update the matrix with counts of reasons appearing together
-    for reasons in df['Reasons']:
-        for i in range(len(reasons)):
-            for j in range(i + 1, len(reasons)):
-                reasons_matrix.loc[reasons[i], reasons[j]] += 1
-                reasons_matrix.loc[reasons[j], reasons[i]] += 1
-    # Generate a heatmap for the correlation matrix
-    plt.figure(figsize=(10, 10))
-    sns.heatmap(reasons_matrix, annot=True, cmap='coolwarm', fmt='d')
-    plt.title('Correlation between Reasons')
-    plt.xlabel('Reasons')
-    plt.ylabel('Reasons')
+    for reasons_list in df['Reasons']:
+        for i in range(len(reasons_list)):
+            for j in range(i + 1, len(reasons_list)):
+                reasons_matrix.loc[reasons_list[i], reasons_list[j]] += 1
+                reasons_matrix.loc[reasons_list[j], reasons_list[i]] += 1
+
+    # Create figure and axes objects
+    fig, ax = plt.subplots(figsize=(12, 10))
+
+    # Generate a heatmap for the correlation matrix using Seaborn
+    sns.heatmap(reasons_matrix, annot=True, cmap='coolwarm', fmt='d', ax=ax)
+
+    # Set title and labels
+    ax.set_title('Correlation between Reasons')
+    ax.set_xlabel('Reasons')
+    ax.set_ylabel('Reasons')
+
+    # Adjust layout and display the plot
     plt.tight_layout()
-    plt.show()
+    plot_image = fig_to_img(fig)
+    return plot_image
+

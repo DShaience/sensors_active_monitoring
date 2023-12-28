@@ -47,7 +47,7 @@ def fig_to_img(fig):
 def create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps):
     n_rows = 4
     n_cols = max(1, int(round(len(selected_columns) / n_rows + 0.5, 0)))
-    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(12, 8))
+    fig, axes = plt.subplots(nrows=n_rows, ncols=n_cols, figsize=(24, 12))
     features_list = []
     for i in range(len(selected_columns)):
         target_col = selected_columns[i]

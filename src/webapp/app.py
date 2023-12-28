@@ -4,7 +4,6 @@ sys.path.append('../')  # Add parent directory to Python path
 import os
 
 import streamlit as st
-# from streamlit_file_browser import st_file_browser
 from utils.gpu_analyses import main
 
 
@@ -17,12 +16,13 @@ def file_selector(folder_path='.'):
 def app():
     st.title('GPU-Z Logs Visualizer')
 
-    uploaded_file = st.file_uploader("Upload a file", type=['txt', 'csv', 'pdf'])
+    col1, col2 = st.columns([1, 5])
+    # Adjust the file uploader width in the second column
+    with col1:
+        uploaded_file = st.file_uploader("Upload a file", type=['txt'])
 
     if uploaded_file is not None:
         # Process the uploaded file
-        # file_contents = uploaded_file.getvalue()
-
         main(uploaded_file)
 
 

@@ -23,22 +23,24 @@ def main(file):
     st.session_state.selected_options = selected_columns
     features_list, sensor_graphs = create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps)
 
-    reasons_df = calc_prefetch_cap_reasons(sensors_all)
-    reasons_graph = plot_reasons_bar_chart(reasons_df)
-
     # Plot graphs
     st.markdown(
         f'<div style="width: 100%;">'
         f'<img src="data:image/png;base64,{sensor_graphs}">'
-        f'<img src="data:image/png;base64,{reasons_graph}">'
         f'</div><br>',
         unsafe_allow_html=True
     )
 
+    reasons_df = calc_prefetch_cap_reasons(sensors_all)
+    reasons_graph = plot_reasons_bar_chart(reasons_df)
     pref_cat_reasons_correlation_matrix = calc_and_plot_reasons_correlation(sensors_all['Reasons'],
                                                                             list(PERF_CAP_REASON.values()))
+
     st.markdown(
-        f'<div style="float: right; width: 50%;"><img src="data:image/png;base64,{pref_cat_reasons_correlation_matrix}"></div>',
+        f'<div style="width: 100%;">'
+        f'<img src="data:image/png;base64,{reasons_graph}">'
+        f'<img src="data:image/png;base64,{pref_cat_reasons_correlation_matrix}">'
+        f'</div><br>',
         unsafe_allow_html=True
     )
 

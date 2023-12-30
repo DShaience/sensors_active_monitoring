@@ -2,8 +2,7 @@ import streamlit as st
 
 from utils.analytical_utils import read_sensors_data_from_file, add_nan_values_on_time_gap, calc_prefetch_cap_reasons, \
     PERF_CAP_REASON
-from utils.visualization_utils import create_multiple_sensor_graphs, plot_reasons_bar_chart, \
-    calc_and_plot_reasons_correlation
+from utils.visualization_utils import create_multiple_sensor_graphs, calc_and_plot_reasons_correlation
 
 
 def main(file):
@@ -18,33 +17,22 @@ def main(file):
     selected_columns = st.multiselect('Select up to 8 options:', cols_to_set,
                                       max_selections=8, default=default_columns)
     st.session_state.selected_options = selected_columns
-    # features_list, sensor_graphs = create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps)
-    features_list = create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps)
 
-    # Plot graphs
-    # st.markdown(
-    #     f'<div style="width: 100%;">'
-    #     f'<img src="data:image/png;base64,{sensor_graphs}">'
-    #     f'</div><br>',
-    #     unsafe_allow_html=True
-    # )
+    create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps)
 
     reasons_df = calc_prefetch_cap_reasons(sensors_all)
-    # reasons_graph = plot_reasons_bar_chart(reasons_df)
-    plot_reasons_bar_chart(reasons_df)
+    col1, col2 = st.columns(2)  # Split the app layout into two columns
+    with col1:  # Use the first column for the chart
+        st.write("### Occurrences of Reasons")
+        st.bar_chart(reasons_df['Count'], width=0.5)  # Adjust width to 50%
+
     pref_cat_reasons_correlation_matrix = calc_and_plot_reasons_correlation(sensors_all['Reasons'],
                                                                             list(PERF_CAP_REASON.values()))
-    # pref_cat_reasons_correlation_matrix = calc_and_plot_reasons_correlation(sensors_all['Reasons'],
-    #                                                                         list(PERF_CAP_REASON.values()))
-    # st.write(pref_cat_reasons_correlation_matrix)
+    with col2:
+        st.write("### Correlation between Reasons")
+        st.write(pref_cat_reasons_correlation_matrix)
 
-    st.markdown(
-        f'<div style="width: 100%;">'
-        # f'<img src="data:image/png;base64,{reasons_graph}">'
-        # f'<img src="data:image/png;base64,{pref_cat_reasons_correlation_matrix}">'
-        f'</div><br>',
-        unsafe_allow_html=True
-    )
+
 
 
 

@@ -1,2 +1,5 @@
 .idea/
 __pycache__/
+src/run.spec
+src/dist/**
+src/build/

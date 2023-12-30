@@ -1,12 +1,9 @@
-import seaborn as sns
 import streamlit as st
 
 from utils.analytical_utils import read_sensors_data_from_file, add_nan_values_on_time_gap, calc_prefetch_cap_reasons, \
     PERF_CAP_REASON
 from utils.visualization_utils import create_multiple_sensor_graphs, plot_reasons_bar_chart, \
     calc_and_plot_reasons_correlation
-
-sns.set(color_codes=True)
 
 
 def main(file):

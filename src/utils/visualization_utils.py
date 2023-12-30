@@ -2,7 +2,6 @@ import base64
 import io
 
 import pandas as pd
-import seaborn as sns
 from matplotlib import pyplot as plt
 
 from utils.analytical_utils import calc_statistics
@@ -64,15 +63,42 @@ def calc_and_plot_reasons_correlation(reasons: pd.Series, reasons_types: list[st
                 reasons_matrix.loc[reasons_list[j], reasons_list[i]] += 1
 
     # Create figure and axes objects
-    fig, ax = plt.subplots(figsize=(12, 10))
+    fig, ax = plt.subplots(figsize=(10, 8))
 
-    # Generate a heatmap for the correlation matrix using Seaborn
-    sns.heatmap(reasons_matrix, annot=True, cmap='coolwarm', fmt='d', ax=ax)
+    # Generate a heatmap for the correlation matrix using Matplotlib
+    heatmap = ax.imshow(reasons_matrix, cmap='coolwarm')
+
+    # Set ticks and labels for both axes
+    n_corr = len(reasons_matrix.columns)
+    ax.set_xticks(range(n_corr))
+    ax.set_yticks(range(n_corr))
+    ax.set_xticklabels(reasons_matrix.columns)
+    ax.set_yticklabels(reasons_matrix.index)
+
+    # Shift the ticks to align with the center of the cells
+    ax.set_xticks([i + 0.5 for i in range(n_corr)], minor=True)
+    ax.set_yticks([i + 0.5 for i in range(n_corr)], minor=True)
+
+    # Display gridlines
+    ax.grid(which='major', color='white', linestyle='-', linewidth=0)
+    ax.grid(which="minor", color="black", linestyle='-', linewidth=1.5)
+
+    # Display values on the heatmap
+    for i in range(len(reasons_types)):
+        for j in range(len(reasons_types)):
+            text = ax.text(j, i, reasons_matrix.iloc[i, j], ha='center', va='center', color='black')
 
     # Set title and labels
     ax.set_title('Correlation between Reasons')
     ax.set_xlabel('Reasons')
     ax.set_ylabel('Reasons')
+
+    # Show color bar
+    cbar = ax.figure.colorbar(heatmap, ax=ax)
+    cbar.ax.set_ylabel("Counts", rotation=-90, va="bottom")
+
+    # Rotate ticks on x-axis for better readability
+    plt.xticks(rotation=90)
 
     # Adjust layout and display the plot
     plt.tight_layout()

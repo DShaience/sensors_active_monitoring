@@ -14,6 +14,8 @@ def file_selector(folder_path='.'):
 
 
 def app():
+    st.set_page_config(layout="wide")  # Optional: Set page configuration
+    st._is_running_with_streamlit = True  # Set a flag for Streamlit compatibility
     st.title('GPU-Z Logs Visualizer')
 
     col1, col2 = st.columns([1, 5])
@@ -27,8 +29,6 @@ def app():
 
 
 if __name__ == '__main__':
-    st.set_page_config(layout="wide")  # Optional: Set page configuration
-    st._is_running_with_streamlit = True  # Set a flag for Streamlit compatibility
     app()
 
 

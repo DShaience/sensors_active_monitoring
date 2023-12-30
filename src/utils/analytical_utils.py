@@ -30,7 +30,7 @@ def convert_columns_data_types(df: pd.DataFrame, datetime_cols: list, numeric_co
             df[col] = pd.to_datetime(df[col])
         elif col in numeric_cols:
             try:
-                df[col] = df[col].str.strip().replace('-', np.nan)
+                df[col] = [value if value != '-' else None for value in df[col].str.strip()]
             except:
                 pass
             df[col] = pd.to_numeric(df[col])
@@ -67,7 +67,8 @@ def calc_time_delta_seconds(series_a: pd.Series, series_b: pd.Series) -> pd.Seri
 
 def add_nan_values_on_time_gap(df: pd.DataFrame, date_column: str, cols_to_set: list[str], gap_threshold_seconds: float = 3600.0):
     df['time_gap_sec'] = calc_time_delta_seconds(df[date_column], df[date_column].shift(-1))
-    df.loc[df['time_gap_sec'] >= gap_threshold_seconds, cols_to_set] = np.nan
+    # df.loc[df['time_gap_sec'] >= gap_threshold_seconds, cols_to_set] = np.nan
+    df.loc[df['time_gap_sec'] >= gap_threshold_seconds, cols_to_set] = None
     return df
 
 

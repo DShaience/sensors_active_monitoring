@@ -25,7 +25,6 @@ def extract_reasons(code):
 
 def convert_columns_data_types(df: pd.DataFrame, datetime_cols: list, numeric_cols: list):
     for col in df.columns:
-        print(col)
         if col in datetime_cols:
             df[col] = pd.to_datetime(df[col])
         elif col in numeric_cols:

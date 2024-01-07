@@ -1,9 +1,4 @@
-# matplotlib
 numpy
 pandas
 pyinstaller
 streamlit
-
-# pyinstaller==5.8.0  # try to upgrade if this works
-# streamlit==1.19.0
-# cx_Freeze

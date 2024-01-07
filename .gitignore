@@ -4,3 +4,4 @@ development/run.spec
 src/dist/**
 src/build/
 src/run.spec
+build/

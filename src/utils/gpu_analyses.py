@@ -30,16 +30,17 @@ def sensor_graphs(file, date_time_delta: dt.timedelta):
 
     create_multiple_sensor_graphs(selected_columns, sensors_nan_gaps)
 
+    # FIXME: make it so that reasons are also affected by time-frames
     reasons_df = calc_prefetch_cap_reasons(sensors_all)
     col1, col2 = st.columns(2)  # Split the app layout into two columns
     with col1:  # Use the first column for the chart
-        st.write("### Occurrences of Reasons")
+        st.write("### GPU Prefetch-Cap Reasons (hist)")
         st.bar_chart(reasons_df['Count'], width=0.5)  # Adjust width to 50%
 
     pref_cat_reasons_correlation_matrix = calc_and_plot_reasons_correlation(sensors_all['Reasons'],
                                                                             list(PERF_CAP_REASON.values()))
     with col2:
-        st.write("### Correlation between Reasons")
+        st.write("### GPU Prefetch-Cap Reasons correlation matrix")
         st.write(pref_cat_reasons_correlation_matrix)
 
 

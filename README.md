@@ -4,18 +4,18 @@ This can be abnormally high temperature (GPU, CPU, RAM, etc.) and any other sens
 SAM is using Streamlit to provide a simple interactive Web-GUI, and allows for dynamic sensors' selection. <br> 
 The data can be filtered by time, and using Streamlit's graphs it enables hover and zoom. 
 
-## Screenshots
+# Screenshots
 
-### The Main Page
+## The Main Page
 ![Main screen](screenshots/Main_screen.png)
 <br><br>
-### Selecting Sensors
+## Selecting Sensors
 ![Main screen](screenshots/Sensor_selections.png)
 <br><br>
-### Selecting by Hours
+## Selecting by Hours
 ![Main screen](screenshots/Hours_selection.png)
 <br><br>
-### GPU Prefetch Cap Reason
+## GPU Prefetch Cap Reason
 ![Main screen](screenshots/Prefetch.png)
 
 

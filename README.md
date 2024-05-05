@@ -18,6 +18,21 @@ The data can be filtered by time, and using Streamlit's graphs it enables hover 
 ## GPU Prefetch Cap Reason
 ![Main screen](screenshots/Prefetch.png)
 
+## Installation
+* Clone the repo
+* Create a conda environment using the requirements.txt file. Tested with Python >= 3.10.
+``` 
+pip install -r requirements.txt
+```
+* The main file is sensors_active_monitoring\src\webapp\app.py you may run it using commandline:
+
+``` 
+cd c:\myprojects\sensors_active_monitoring\src
+c:\myprojects\my_conda_envs\sensor_active_monitoring_env\python.exe run.py
+``` 
+* This will open your browser with the main screen.
+* Select a GPU-Z Log file and load it into Sensor Active Monitoring
+
 
 ## Future Release Plans
 * Add a better time filtering, perhaps with range

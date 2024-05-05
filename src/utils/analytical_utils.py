@@ -3,15 +3,7 @@ from collections import Counter, OrderedDict
 import numpy as np
 import pandas as pd
 
-PERF_CAP_REASON = {
-    # Taken from:
-    #   https://www.techpowerup.com/forums/threads/gpu-z-perfcap-log-number-meanings.202433/
-    1: "NV_GPU_PERF_POLICY_ID_SW_POWER",        # Power. Indicating perf is limited by total power limit.
-    2: "NV_GPU_PERF_POLICY_ID_SW_THERMAL",      # Thermal. Indicating perf is limited by temperature limit.
-    4: "NV_GPU_PERF_POLICY_ID_SW_RELIABILITY",  # Reliability. Indicating perf is limited by reliability voltage.
-    8: "NV_GPU_PERF_POLICY_ID_SW_OPERATING",    # Operating. Indicating perf is limited by max operating voltage.
-    16: "NV_GPU_PERF_POLICY_ID_SW_UTILIZATION"  # Utilization. Indicating perf is limited by GPU utilization.
-}
+from utils.consts import PERF_CAP_REASON
 
 
 def extract_reasons(code):
@@ -94,3 +86,10 @@ def calc_prefetch_cap_reasons(sensors_all: pd.DataFrame):
     reasons_df = pd.DataFrame.from_dict(reasons_count, orient='index', columns=['Count'])
     reasons_df.sort_values(by='Count', ascending=False, inplace=True)
     return reasons_df
+
+
+def get_default_columns(default_columns: list[str], all_columns: list[str]) -> list[str]:
+    res = [default_column for default_column in default_columns if default_column in all_columns]
+    if len(res) > 0:
+        return res
+    return all_columns[0:len(default_columns)]

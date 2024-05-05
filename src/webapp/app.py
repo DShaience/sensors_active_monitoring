@@ -3,7 +3,7 @@ import os
 import streamlit as st
 from utils.gpu_analyses import sensor_graphs
 
-from datetime import datetime, timedelta
+from datetime import timedelta
 
 TIMEFRAMES = {
     'Last 1 Hour': timedelta(hours=1),

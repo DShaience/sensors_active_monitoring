@@ -1,0 +1,7 @@
+name: sensors_analyzer
+channels:
+  - defaults
+dependencies:
+  - numpy~=1.26
+  - pandas~=2.1
+  - streamlit~=1.34

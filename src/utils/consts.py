@@ -11,3 +11,6 @@ PERF_CAP_REASON = {
     8: "NV_GPU_PERF_POLICY_ID_SW_OPERATING",    # Operating. Indicating perf is limited by max operating voltage.
     16: "NV_GPU_PERF_POLICY_ID_SW_UTILIZATION"  # Utilization. Indicating perf is limited by GPU utilization.
 }
+
+DEFAULT_SERVER_PORT = 8501
+

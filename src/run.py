@@ -2,6 +2,7 @@ import streamlit
 
 import streamlit.web.cli as stcli
 import os, sys
+from utils.consts import DEFAULT_SERVER_PORT
 
 
 def resolve_path(path):
@@ -15,10 +16,10 @@ if __name__ == "__main__":
         "run",
         resolve_path("webapp/app.py"),
         "--global.developmentMode=false",
-        "email=''",
+        "--browser.gatherUsageStats=false",
+        f"--server.port={DEFAULT_SERVER_PORT}",
     ]
     sys.exit(stcli.main())
-
 
 
 ## REVIEW THIS FOR CREATING A STREAMLIT EXECUTABLE APP
@@ -27,3 +28,6 @@ if __name__ == "__main__":
 
 # With App Service
 # https://towardsdatascience.com/beginner-guide-to-streamlit-deployment-on-azure-f6618eee1ba9
+
+# Check this out for azure/github/copilot
+# https://docs.github.com/en/billing/managing-the-plan-for-your-github-account/connecting-an-azure-subscription

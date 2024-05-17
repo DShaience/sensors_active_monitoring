@@ -15,6 +15,7 @@ if __name__ == "__main__":
         "run",
         resolve_path("webapp/app.py"),
         "--global.developmentMode=false",
+        "email=''",
     ]
     sys.exit(stcli.main())
 
@@ -23,3 +24,6 @@ if __name__ == "__main__":
 ## REVIEW THIS FOR CREATING A STREAMLIT EXECUTABLE APP
 # https://www.google.com/search?client=firefox-b-d&q=packaging+streamlit+app+as+executable
 # https://ploomber.io/blog/streamlit_exe/
+
+# With App Service
+# https://towardsdatascience.com/beginner-guide-to-streamlit-deployment-on-azure-f6618eee1ba9

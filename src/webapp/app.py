@@ -1,6 +1,8 @@
 import os
-
+import sys
+sys.path.append(os.getcwd())  # workaround for now
 import streamlit as st
+
 from utils.gpu_analyses import sensor_graphs
 
 from datetime import timedelta

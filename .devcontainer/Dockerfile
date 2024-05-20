@@ -22,8 +22,9 @@ USER root
 RUN chmod a+x run.py
 RUN chmod a+x run_app.sh
 
-CMD ["streamlit", "run", "run.py", "--server.port=8051", "--server.address=0.0.0.0", "--server.enableWebsocketCompression=false"]
+CMD ["streamlit", "run", "webapp/app.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.enableWebsocketCompression=false"]
 
+# CMD ["streamlit", "run", "run.py", "--server.port=8501", "--server.address=0.0.0.0", "--server.enableWebsocketCompression=false"]
 # CMD ["streamlit", "run", "app.py", "--server.port=8051", "--server.address=0.0.0.0", "--server.enableWebsocketCompression=false"]
 
 # CMD ["./run_app.sh"]

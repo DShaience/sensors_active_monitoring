@@ -17,7 +17,8 @@ if __name__ == "__main__":
         resolve_path("webapp/app.py"),
         "--global.developmentMode=false",
         "--browser.gatherUsageStats=false",
-        f"--server.port={DEFAULT_SERVER_PORT}",
+        "--server.address=0.0.0.0",
+        # f"--server.port={DEFAULT_SERVER_PORT}",
     ]
     sys.exit(stcli.main())
 
@@ -28,6 +29,13 @@ if __name__ == "__main__":
 
 # With App Service
 # https://towardsdatascience.com/beginner-guide-to-streamlit-deployment-on-azure-f6618eee1ba9
+
+# https://medium.com/@MSufiyanGhori/how-to-use-azure-to-deploy-your-web-app-container-for-free-e11986bc3374
+
+# https://medium.com/@MSufiyanGhori/how-to-use-azure-to-deploy-your-web-app-container-for-free-e11986bc3374#eae7
+
+# new
+# https://learn.microsoft.com/en-us/answers/questions/1470782/how-to-deploy-a-streamlit-application-on-azure-app
 
 # Check this out for azure/github/copilot
 # https://docs.github.com/en/billing/managing-the-plan-for-your-github-account/connecting-an-azure-subscription

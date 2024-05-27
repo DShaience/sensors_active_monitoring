@@ -23,9 +23,17 @@ def file_selector(folder_path='.'):
 
 
 def app():
-    st.set_page_config(layout="wide")  # Optional: Set page configuration
+    st.set_page_config(
+        page_title="GPU-Z Logs Visualizer",
+        page_icon="📡",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
     st._is_running_with_streamlit = True  # Set a flag for Streamlit compatibility
     st.title('GPU-Z Logs Visualizer')
+    st.write("This site is developed and maintained by [Shay Amram](%s), code available at [github](%s)"
+             % ("https://www.linkedin.com/in/shay-amram-69924051/",
+                "https://github.com/DShaience/sensors_active_monitoring"))
 
     col1, col2, col3, col4, col5 = st.columns(5)
     # Adjust the file uploader width in the second column
